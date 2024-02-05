@@ -116,12 +116,12 @@ Retornará o endereço do nó que será a nova raiz da subárvore originalmente 
 PONT rotacaoL(PONT p){
     PONT u = p->esq;
 
-    if (u->bal == -1) {
+    if (u->bal == -1 || u->bal == 0) {
         p->esq = u->dir;
         u->dir = p;
         p->bal = 0;
         u->bal = 0;
-        printf("Após rotação à esquerda (L): Fator de balanceamento: %d\n", p->bal);
+        
         return u;
     }
 
@@ -144,7 +144,7 @@ PONT rotacaoL(PONT p){
             u->bal = 0;
 
         v->bal = 0;
-        //printf("Após rotação à esquerda (L): Fator de balanceamento: %d\n", p->bal);
+        
         return v;
     }
 
@@ -155,22 +155,18 @@ PONT rotacaoL(PONT p){
 Retornará o endereço do nó que será a nova raiz da subárvore originalmente iniciada por p */
 PONT rotacaoR(PONT p){
     PONT u = p->dir;
-    printf("7");
-    if (u->bal == 1) {
-        printf("8");
+    if (u->bal == 1 || u->bal == 0) {
         p->dir = u->esq;
         u->esq = p;
         p->bal = 0;
         u->bal = 0;
-        //printf("Após rotação à direita (R): Fator de balanceamento: %d\n", p->bal);
+        
         return u;
     }
-    printf("9");
+    
     if (u->bal == -1) {
         PONT v = u->esq;
-        printf("10");
         u->esq = v->dir;
-        printf("11");
         v->dir = u;
         p->dir = v->esq;
         v->esq = p;
@@ -185,10 +181,11 @@ PONT rotacaoR(PONT p){
             u->bal = 0;
 
         v->bal = 0;
-        //printf("Após rotação à direita (R): Fator de balanceamento: %d\n", p->bal);
 
         return v;
     }
+
+
 
     return p;
 }
@@ -211,8 +208,6 @@ void inserirAVL(PONT* pp, TIPOCHAVE ch, bool* alterou){
     }    
         
     (*pp)->bal = atualizarBalanceamentoTotal(*pp);
-    //printf("Fator de balanceamento após inserção: %d\n", (*pp)->bal);
-
     
     if ((*pp)->bal < -1)
         *pp = rotacaoL(*pp);
@@ -220,7 +215,6 @@ void inserirAVL(PONT* pp, TIPOCHAVE ch, bool* alterou){
     if ((*pp)->bal > 1)
         *pp = rotacaoR(*pp);
 
-    //printf("Após rotação: Fator de balanceamento: %d\n", (*pp)->bal);
     *alterou = false;
 }
 
@@ -299,8 +293,6 @@ bool excluirAVL(PONT* raiz, TIPOCHAVE ch, bool* alterou){
                     free((*raiz)->dir);
                     (*raiz)->dir = NULL;
                 }
-            
-                //*alterou = true;
             }
         }
     }
@@ -343,14 +335,15 @@ int main() {
 
     inicializar(&raiz);
 
-    inserirAVL(&raiz, 24, &alterou);
-    inserirAVL(&raiz, 10, &alterou);
-    inserirAVL(&raiz, 32, &alterou);
-    inserirAVL(&raiz, 5, &alterou);
-    inserirAVL(&raiz, 18, &alterou);
     inserirAVL(&raiz, 15, &alterou);
+    inserirAVL(&raiz, 10, &alterou);
     inserirAVL(&raiz, 20, &alterou);
+    inserirAVL(&raiz, 5, &alterou);
+    inserirAVL(&raiz, 12, &alterou);
+    //inserirAVL(&raiz, 15, &alterou);
+    //inserirAVL(&raiz, 20, &alterou);
 
+    /*
     printf("\nArvore AVL em ordem: ");
     exibirArvoreEmOrdem(raiz);
     printf("\n");
@@ -370,6 +363,7 @@ int main() {
     printf("\nArvore AVL: ");
     exibirArvore2(raiz, 0);
     printf("\n");
+    */
     /*
     PONT busca = buscaBinaria(5, raiz);
     printf("\nBusca Binaria: %d\n", busca->chave);
@@ -384,32 +378,15 @@ int main() {
         printf("Valor nao encontrado\n");
     */
     alterou = false;
-    if (excluirAVL(&raiz, 5, &alterou) == true) 
+    if (excluirAVL(&raiz, 20, &alterou) == true) 
         printf("\nElemento excluido\n");
     else
         printf("\nElemento nao encontrado\n");
     
-    alterou = false;
-    if (excluirAVL(&raiz, 10, &alterou) == true) 
-        printf("\nElemento excluido\n");
-    else
-        printf("\nElemento nao encontrado\n");
-
-    alterou = false;
-    if (excluirAVL(&raiz, 24, &alterou) == true) 
-        printf("\nElemento excluido\n");
-    else
-        printf("\nElemento nao encontrado\n");
-
-    alterou = false;
-    if (excluirAVL(&raiz, 15, &alterou) == true) 
-        printf("\nElemento excluido\n");
-    else
-        printf("\nElemento nao encontrado\n");
-
     printf("\nArvore AVL: ");
     exibirArvore(raiz);
     printf("\n");
 
+    
     return 0;
 }
