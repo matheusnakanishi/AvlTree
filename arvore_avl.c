@@ -1,0 +1,415 @@
+#include <stdio.h>
+#include <malloc.h>
+#include <stdlib.h>
+
+#define true 1
+#define false 0
+
+typedef int bool;
+typedef int TIPOCHAVE;
+
+typedef struct aux {
+TIPOCHAVE chave;
+struct aux *esq;
+struct aux *dir;
+int bal;
+} NO, *PONT;
+
+/* cria um novo (aloca memoria e preenche valores) no com chave=ch e retorna seu endereco */
+PONT criarNovoNo(TIPOCHAVE ch){
+    PONT novo = (PONT)malloc(sizeof(NO));
+
+    if (novo) {
+        novo->chave = ch;
+        novo->bal = 0;
+        novo->esq = NULL;
+        novo->dir = NULL;
+    }
+    else {
+        printf("Erro de alocacao de memoria\n");
+        exit(0);
+    }
+
+    return novo;
+}
+
+// Retorna o maior valor entre dois inteiros
+int max(int a, int b){
+    return (a > b) ? a : b;
+}
+
+// Retorna a altura de uma (sub-)arvore
+int altura(PONT p){
+    if (p == NULL) 
+        return -1;
+
+    return 1 + max(altura(p->esq), altura(p->dir));
+}
+
+/* Exibe arvore Em Ordem */
+void exibirArvoreEmOrdem(PONT raiz){
+    if (raiz) {
+        exibirArvoreEmOrdem(raiz->esq);
+        printf("%d ", raiz->chave);
+        exibirArvoreEmOrdem(raiz->dir);
+    }
+}
+/* Exibe arvore Pre Ordem */
+void exibirArvorePreOrdem(PONT raiz){
+    if (raiz) {
+        printf("%d ", raiz->chave);
+        exibirArvorePreOrdem(raiz->esq);
+        exibirArvorePreOrdem(raiz->dir);
+    }
+}
+/* Exibe arvore Pos Ordem */
+void exibirArvorePosOrdem(PONT raiz){
+    if (raiz) {
+        exibirArvorePosOrdem(raiz->esq);
+        exibirArvorePosOrdem(raiz->dir);
+        printf("%d ", raiz->chave);
+    }
+}
+
+/* Exibe arvore Em Ordem (com parenteses para os filhos) */
+void exibirArvore(PONT raiz){
+    if (raiz) {
+        printf("(");
+        exibirArvore(raiz->esq);
+        printf("%d", raiz->chave);
+        exibirArvore(raiz->dir);
+        printf(")");
+    }
+}
+
+/* Exibe arvore Pre-Ordem indicando pai de cada no */
+void exibirArvore2(PONT raiz, TIPOCHAVE chavePai){
+    if (raiz) {
+        printf("(pai: %d ", chavePai);
+        printf("filho: %d) ", raiz->chave);
+        exibirArvore2(raiz->esq, raiz->chave);
+        exibirArvore2(raiz->dir, raiz->chave);
+    }
+}
+
+// Verifica se árvore é AVL
+bool ehAVL(PONT p){
+    if (p == NULL) 
+        return true;
+    
+    if (p->bal > 1 || p->bal < -1)
+        return false;
+
+    return ehAVL(p->esq) && ehAVL(p->dir);
+}
+
+// Atualiza o balancemento total
+int atualizarBalanceamentoTotal(PONT raiz){
+    if (raiz == NULL)
+        return 0;
+    
+    return altura(raiz->dir) - altura(raiz->esq); 
+}   
+
+/* Rotações à direita (LL e LR)
+Retornará o endereço do nó que será a nova raiz da subárvore originalmente iniciada por p */
+PONT rotacaoL(PONT p){
+    PONT u = p->esq;
+
+    if (u->bal == -1) {
+        p->esq = u->dir;
+        u->dir = p;
+        p->bal = 0;
+        u->bal = 0;
+        printf("Após rotação à esquerda (L): Fator de balanceamento: %d\n", p->bal);
+        return u;
+    }
+
+    if (u->bal == 1) {
+        PONT v = u->dir;
+
+        u->dir = v->esq;
+        v->esq = u;
+        p->esq = v->dir;
+        v->dir = p;
+
+        if (v->bal == -1)
+            p->bal = -1;
+        else
+            p->bal = 0;
+
+        if (v->bal == 1)
+            u->bal = -1;
+        else
+            u->bal = 0;
+
+        v->bal = 0;
+        //printf("Após rotação à esquerda (L): Fator de balanceamento: %d\n", p->bal);
+        return v;
+    }
+
+    return p;
+}
+
+/* Rotações à esquerda (RR e RL)
+Retornará o endereço do nó que será a nova raiz da subárvore originalmente iniciada por p */
+PONT rotacaoR(PONT p){
+    PONT u = p->dir;
+    printf("7");
+    if (u->bal == 1) {
+        printf("8");
+        p->dir = u->esq;
+        u->esq = p;
+        p->bal = 0;
+        u->bal = 0;
+        //printf("Após rotação à direita (R): Fator de balanceamento: %d\n", p->bal);
+        return u;
+    }
+    printf("9");
+    if (u->bal == -1) {
+        PONT v = u->esq;
+        printf("10");
+        u->esq = v->dir;
+        printf("11");
+        v->dir = u;
+        p->dir = v->esq;
+        v->esq = p;
+        if (v->bal == -1)
+            p->bal = -1;
+        else
+            p->bal = 0;
+
+        if (v->bal == 1)
+            u->bal = -1;
+        else
+            u->bal = 0;
+
+        v->bal = 0;
+        //printf("Após rotação à direita (R): Fator de balanceamento: %d\n", p->bal);
+
+        return v;
+    }
+
+    return p;
+}
+
+/* Inserção AVL: p é inicializado com o endereco do nó raiz e *alterou com false */
+void inserirAVL(PONT* pp, TIPOCHAVE ch, bool* alterou){
+    if (*pp == NULL) {
+        *pp = criarNovoNo(ch);
+        *alterou = true;
+    }
+    else {
+        if (ch < (*pp)->chave) 
+            inserirAVL(&(*pp)->esq, ch, alterou);
+        else if (ch > (*pp)->chave) 
+            inserirAVL(&(*pp)->dir, ch, alterou);
+        else {
+            *alterou = false;
+            return;
+        }
+    }    
+        
+    (*pp)->bal = atualizarBalanceamentoTotal(*pp);
+    //printf("Fator de balanceamento após inserção: %d\n", (*pp)->bal);
+
+    
+    if ((*pp)->bal < -1)
+        *pp = rotacaoL(*pp);
+    
+    if ((*pp)->bal > 1)
+        *pp = rotacaoR(*pp);
+
+    //printf("Após rotação: Fator de balanceamento: %d\n", (*pp)->bal);
+    *alterou = false;
+}
+
+/* retorna o endereco do NO que contem chave=ch ou NULL caso a chave nao seja encontrada. Utiliza busca binaria recursiva */
+PONT buscaBinaria(TIPOCHAVE ch, PONT raiz){
+    if (raiz == NULL || raiz->chave == ch)
+        return raiz;
+    
+    if (ch < raiz->chave)
+        return buscaBinaria(ch, raiz->esq);
+    else
+        return buscaBinaria(ch, raiz->dir);
+}
+
+// Busca binária não recursiva devolvendo o nó pai
+PONT buscaNo(PONT raiz, TIPOCHAVE ch, PONT *pai){
+    PONT atual = raiz;
+
+    while (atual != NULL) {
+        if (atual->chave == ch) {
+            return atual;
+        }
+
+        *pai = atual;
+
+        if (ch < atual->chave) {
+            atual = atual->esq;
+        } else {
+            atual = atual->dir;
+        }
+    }
+
+    return NULL;
+}
+
+/* Auxilir da funcao excluirChave, procura a maior chave menor que a chave que serah excluida */
+PONT maiorAEsquerda(PONT p, PONT *ant){
+    while (p->dir) {
+        (*ant) = p;
+        p = p->dir;
+    }
+    
+    return p;
+}
+
+// exclui a chave com valor igual a ch
+bool excluirAVL(PONT* raiz, TIPOCHAVE ch, bool* alterou){
+    if (*raiz == NULL) 
+        return false;
+
+    if (ch < (*raiz)->chave) 
+        *alterou = excluirAVL(&(*raiz)->esq, ch, alterou);
+    else if (ch > (*raiz)->chave)
+        *alterou = excluirAVL(&(*raiz)->dir, ch, alterou);
+    else {
+        if ((*raiz)->chave == ch) {
+            if ((*raiz)->esq == NULL && (*raiz)->dir == NULL){
+                free(*raiz);
+                *raiz = NULL;
+            }
+            else if ((*raiz)->esq != NULL && (*raiz)->dir != NULL) {
+                PONT ant = *raiz;
+                PONT temp;
+                temp = maiorAEsquerda((*raiz)->esq, &ant);
+                (*raiz)->chave = temp->chave;
+                *alterou = excluirAVL(&(*raiz)->esq, temp->chave, alterou); 
+            }
+            else {
+                if ((*raiz)->esq) {
+                    (*raiz)->chave = (*raiz)->esq->chave;
+                    free((*raiz)->esq);
+                    (*raiz)->esq = NULL;
+                }
+                else {
+                    (*raiz)->chave = (*raiz)->dir->chave;
+                    free((*raiz)->dir);
+                    (*raiz)->dir = NULL;
+                }
+            
+                //*alterou = true;
+            }
+        }
+    }
+
+    if (*raiz) {
+        (*raiz)->bal = atualizarBalanceamentoTotal(*raiz);
+    
+        if ((*raiz)->bal < -1)
+            *raiz = rotacaoL(*raiz);
+    
+        if ((*raiz)->bal > 1)
+            *raiz = rotacaoR(*raiz);
+    }
+    
+    return true;
+}
+
+/* funcao auxiliar na destruicao (liberacao da memoria) de uma arvore */
+void destruirAux(PONT subRaiz){
+    if (subRaiz) {
+        destruirAux(subRaiz->esq);
+        destruirAux(subRaiz->dir);
+        free(subRaiz);
+    }
+}
+/* libera toda memoria de uma arvore e coloca NULL no valor da raiz */
+void destruirArvore(PONT * raiz){
+    destruirAux(*raiz);
+    *raiz = NULL;
+}
+
+//inicializa arvore
+void inicializar(PONT *raiz){
+    *raiz = NULL;
+}
+
+int main() {    
+    PONT raiz;
+    bool alterou = false;
+
+    inicializar(&raiz);
+
+    inserirAVL(&raiz, 24, &alterou);
+    inserirAVL(&raiz, 10, &alterou);
+    inserirAVL(&raiz, 32, &alterou);
+    inserirAVL(&raiz, 5, &alterou);
+    inserirAVL(&raiz, 18, &alterou);
+    inserirAVL(&raiz, 15, &alterou);
+    inserirAVL(&raiz, 20, &alterou);
+
+    printf("\nArvore AVL em ordem: ");
+    exibirArvoreEmOrdem(raiz);
+    printf("\n");
+
+    printf("\nArvore AVL pre-ordem: ");
+    exibirArvorePreOrdem(raiz);
+    printf("\n");
+
+    printf("\nArvore AVL pos-ordem: ");
+    exibirArvorePosOrdem(raiz);
+    printf("\n");
+
+    printf("\nArvore AVL: ");
+    exibirArvore(raiz);
+    printf("\n");
+
+    printf("\nArvore AVL: ");
+    exibirArvore2(raiz, 0);
+    printf("\n");
+    /*
+    PONT busca = buscaBinaria(5, raiz);
+    printf("\nBusca Binaria: %d\n", busca->chave);
+
+    PONT pai = NULL;
+    busca = buscaNo(raiz, 7, &pai);
+    if (pai && busca) 
+        printf("\nBusca No: pai: %d  - filho: %d\n",pai->chave, busca->chave);
+    else if (busca)
+        printf("Busca No: (sem pai) no: %d\n", busca->chave);
+    else
+        printf("Valor nao encontrado\n");
+    */
+    alterou = false;
+    if (excluirAVL(&raiz, 5, &alterou) == true) 
+        printf("\nElemento excluido\n");
+    else
+        printf("\nElemento nao encontrado\n");
+    
+    alterou = false;
+    if (excluirAVL(&raiz, 10, &alterou) == true) 
+        printf("\nElemento excluido\n");
+    else
+        printf("\nElemento nao encontrado\n");
+
+    alterou = false;
+    if (excluirAVL(&raiz, 24, &alterou) == true) 
+        printf("\nElemento excluido\n");
+    else
+        printf("\nElemento nao encontrado\n");
+
+    alterou = false;
+    if (excluirAVL(&raiz, 15, &alterou) == true) 
+        printf("\nElemento excluido\n");
+    else
+        printf("\nElemento nao encontrado\n");
+
+    printf("\nArvore AVL: ");
+    exibirArvore(raiz);
+    printf("\n");
+
+    return 0;
+}
