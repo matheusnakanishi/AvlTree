@@ -332,61 +332,93 @@ void inicializar(PONT *raiz){
 int main() {    
     PONT raiz;
     bool alterou = false;
+    int op, valor;
 
     inicializar(&raiz);
 
-    inserirAVL(&raiz, 15, &alterou);
-    inserirAVL(&raiz, 10, &alterou);
-    inserirAVL(&raiz, 20, &alterou);
-    inserirAVL(&raiz, 5, &alterou);
-    inserirAVL(&raiz, 12, &alterou);
-    //inserirAVL(&raiz, 15, &alterou);
-    //inserirAVL(&raiz, 20, &alterou);
+    do {
+        printf("\n[1]Inserir\n[2]Exibir\n[3]Busca\n[4]Remover\n[5]Finalizar\nOpcao: ");
+        scanf("%d", &op);
 
-    /*
-    printf("\nArvore AVL em ordem: ");
-    exibirArvoreEmOrdem(raiz);
-    printf("\n");
+        switch (op) {
+        case 1:
+            system("cls");
+            printf("Valor a ser inserido: ");
+            scanf("%d", &valor);
+            inserirAVL(&raiz, valor, &alterou);
+            printf("Valor %d inserido\n", valor);
+            break;
 
-    printf("\nArvore AVL pre-ordem: ");
-    exibirArvorePreOrdem(raiz);
-    printf("\n");
+        case 2:
+            system("cls");
+            printf("\nArvore AVL em ordem: ");
+            exibirArvoreEmOrdem(raiz);
+            printf("\n");
 
-    printf("\nArvore AVL pos-ordem: ");
-    exibirArvorePosOrdem(raiz);
-    printf("\n");
+            printf("\nArvore AVL pre-ordem: ");
+            exibirArvorePreOrdem(raiz);
+            printf("\n");
 
-    printf("\nArvore AVL: ");
-    exibirArvore(raiz);
-    printf("\n");
+            printf("\nArvore AVL pos-ordem: ");
+            exibirArvorePosOrdem(raiz);
+            printf("\n");
 
-    printf("\nArvore AVL: ");
-    exibirArvore2(raiz, 0);
-    printf("\n");
-    */
-    /*
-    PONT busca = buscaBinaria(5, raiz);
-    printf("\nBusca Binaria: %d\n", busca->chave);
+            printf("\nArvore AVL: ");
+            exibirArvore(raiz);
+            printf("\n");
 
-    PONT pai = NULL;
-    busca = buscaNo(raiz, 7, &pai);
-    if (pai && busca) 
-        printf("\nBusca No: pai: %d  - filho: %d\n",pai->chave, busca->chave);
-    else if (busca)
-        printf("Busca No: (sem pai) no: %d\n", busca->chave);
-    else
-        printf("Valor nao encontrado\n");
-    */
-    alterou = false;
-    if (excluirAVL(&raiz, 20, &alterou) == true) 
-        printf("\nElemento excluido\n");
-    else
-        printf("\nElemento nao encontrado\n");
-    
-    printf("\nArvore AVL: ");
-    exibirArvore(raiz);
-    printf("\n");
+            printf("\nArvore AVL: ");
+            exibirArvore2(raiz, 0);
+            printf("\n");
+            break;
 
+        case 3:
+            system("cls");
+            printf("Valor a ser buscado: ");
+            scanf("%d", &valor);
+
+            PONT busca;
+            
+            busca = buscaBinaria(valor, raiz);
+            printf("\nBusca Binaria: %d\n", busca->chave);
+
+            PONT pai = NULL;
+
+            busca = buscaNo(raiz, valor, &pai);
+            if (pai && busca) 
+                printf("\nBusca No: pai: %d  - filho: %d\n",pai->chave, busca->chave);
+            else if (busca)
+                printf("Busca No: (sem pai) no: %d\n", busca->chave);
+            else
+                printf("Valor nao encontrado\n");
+            break;
+
+        case 4:
+            system("cls");
+            alterou = false;
+
+            printf("Valor a ser removido: ");
+            scanf("%d", &valor);
+
+            if (excluirAVL(&raiz, valor, &alterou) == true) 
+                printf("\nElemento %d excluido\n", valor);
+            else
+                printf("\nElemento %d nao encontrado\n", valor);
+            break;
+
+        case 5:
+            system("cls");
+            destruirArvore(&raiz);
+            printf("\nArvore destruida\n");
+            printf("Programa finalizado\n");
+            break;
+            
+        default:
+            printf("\nOpcao invalida. Tente novamente\n");
+            break;
+        }
+
+    } while (op != 5);
     
     return 0;
 }
