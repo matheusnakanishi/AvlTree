@@ -116,7 +116,7 @@ Retornará o endereço do nó que será a nova raiz da subárvore originalmente 
 PONT rotacaoL(PONT p){
     PONT u = p->esq;
 
-    if (u->bal == -1 || u->bal == 0) {
+    if (u->bal == -1) {
         p->esq = u->dir;
         u->dir = p;
         p->bal = 0;
@@ -148,6 +148,15 @@ PONT rotacaoL(PONT p){
         return v;
     }
 
+    if (u->bal == 0) {
+        p->esq = u->dir;
+        u->dir = p;
+        p->bal = atualizarBalanceamentoTotal(p);
+        u->bal = atualizarBalanceamentoTotal(u);
+        
+        return u;
+    }
+
     return p;
 }
 
@@ -155,7 +164,7 @@ PONT rotacaoL(PONT p){
 Retornará o endereço do nó que será a nova raiz da subárvore originalmente iniciada por p */
 PONT rotacaoR(PONT p){
     PONT u = p->dir;
-    if (u->bal == 1 || u->bal == 0) {
+    if (u->bal == 1) {
         p->dir = u->esq;
         u->esq = p;
         p->bal = 0;
@@ -185,7 +194,14 @@ PONT rotacaoR(PONT p){
         return v;
     }
 
-
+    if (u->bal == 0) {
+        p->dir = u->esq;
+        u->esq = p;
+        p->bal = atualizarBalanceamentoTotal(p);
+        u->bal = atualizarBalanceamentoTotal(u);
+        
+        return u;
+    }
 
     return p;
 }
@@ -380,7 +396,10 @@ int main() {
             PONT busca;
             
             busca = buscaBinaria(valor, raiz);
-            printf("\nBusca Binaria: %d\n", busca->chave);
+            if (busca)
+                printf("\nBusca Binaria: %d\n", busca->chave);
+            else
+                printf("\nValor nao encontrado\n");
 
             PONT pai = NULL;
 
